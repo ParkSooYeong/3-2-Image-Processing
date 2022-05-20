@@ -1,4 +1,4 @@
-﻿/* SKU CoE ITE - ParkSooYoung */
+﻿/* SKU CoE ITE - 20170910 ParkSooYoung */
 /* Grade 3 , Semester 2 , Chapter 0 , Number 0 */
 
 #define _CRT_SECURE_NO_WARNINGS // Warning C4996 Error
