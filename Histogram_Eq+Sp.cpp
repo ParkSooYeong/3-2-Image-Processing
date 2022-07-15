@@ -1,8 +1,8 @@
-/* SKU CoE ITE - ParkSooYoung , 2021-02 ImageProcessing : Histogram */
+/* SKU CoE ITE - ParkSooYoung , 2021-02 ImageProcessing : Histogram (Eq+Sq) */
 
 #define _CRT_SECURE_NO_WARNINGS // Warning C4996 Error
 
-//ÀüÃ³¸®±â ÆÄÆ®
+//ì „ì²˜ë¦¬ê¸° íŒŒíŠ¸
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -13,14 +13,14 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define CV_RGB(r, g, b) cvScalar(b, g, r) // OpenCV ³»Àå ÇÔ¼ö ÀÛ¾÷¿¡ ÇÊ¿äÇÑ Á¤ÀÇ
+#define CV_RGB(r, g, b) cvScalar(b, g, r) // OpenCV ë‚´ì¥ í•¨ìˆ˜ ì‘ì—…ì— í•„ìš”í•œ ì •ì˜
 
-typedef unsigned char uchar; // unsigned char Å¸ÀÔÀ» uchar·Î ÀçÁ¤ÀÇ
+typedef unsigned char uchar; // unsigned char íƒ€ì…ì„ ucharë¡œ ì¬ì •ì˜
 
-// È÷½ºÅä±×·¥ ÀÛ¾÷¿¡ ÇÊ¿äÇÑ Àü¿ª ¹è¿­ ¹× º¯¼ö ¼±¾ğ
+// íˆìŠ¤í† ê·¸ë¨ ì‘ì—…ì— í•„ìš”í•œ ì „ì—­ ë°°ì—´ ë° ë³€ìˆ˜ ì„ ì–¸
 int histogram[256], cdfOfHisto[256], histogramEqual[256], tmpCDF[256], val=0, mytemp;
 
-// ¸Ş¸ğ¸® ÇÒ´ç ÇÔ¼ö
+// ë©”ëª¨ë¦¬ í• ë‹¹ í•¨ìˆ˜
 uchar** uc_alloc(int size_x, int size_y)
 {
     uchar** m;
@@ -44,7 +44,7 @@ uchar** uc_alloc(int size_x, int size_y)
     return m;
 }
 
-// ¿µ»ó ÀĞ´Â ÇÔ¼ö
+// ì˜ìƒ ì½ëŠ” í•¨ìˆ˜
 void read_ucmatrix(int size_x, int size_y, uchar** ucmatrix, const char* filename)
 {
     int i;
@@ -68,7 +68,7 @@ void read_ucmatrix(int size_x, int size_y, uchar** ucmatrix, const char* filenam
     fclose(f);
 }
 
-// ¿µ»ó ¾²´Â ÇÔ¼ö
+// ì˜ìƒ ì“°ëŠ” í•¨ìˆ˜
 void write_ucmatrix(int size_x, int size_y, uchar** ucmatrix, const char* filename)
 {
     int i;
@@ -92,7 +92,7 @@ void write_ucmatrix(int size_x, int size_y, uchar** ucmatrix, const char* filena
     fclose(f);
 }
 
-// È÷½ºÅä±×·¥ ÇÔ¼ö , ÀÌ¹ÌÁö opencv·Î Ãâ·Â
+// íˆìŠ¤í† ê·¸ë¨ í•¨ìˆ˜ , ì´ë¯¸ì§€ opencvë¡œ ì¶œë ¥
 void get_hist(uchar** img, int X_Size, int Y_Size)
 {
 	int i, j, tmp;
@@ -101,7 +101,7 @@ void get_hist(uchar** img, int X_Size, int Y_Size)
 	CvSize histoSize, cdfSize;
 	IplImage* imgHisto, * cdfImgHisto;
 
-	// »ı¼ºÇÒ ÀÌ¹ÌÁö »çÀÌÁî(¿øº» ÀÌ¹ÌÁö, ´©ÀûºĞÆ÷ ÈÄÀÇ ÀÌ¹ÌÁö)
+	// ìƒì„±í•  ì´ë¯¸ì§€ ì‚¬ì´ì¦ˆ(ì›ë³¸ ì´ë¯¸ì§€, ëˆ„ì ë¶„í¬ í›„ì˜ ì´ë¯¸ì§€)
 	histoSize.width = 256;
 	histoSize.height = 256;
 
@@ -111,7 +111,7 @@ void get_hist(uchar** img, int X_Size, int Y_Size)
 	imgHisto = cvCreateImage(histoSize, 8, 1);
 	cdfImgHisto = cvCreateImage(cdfSize, 8, 1);
 
-	// ÀÌ¹ÌÁö ÃÊ±âÈ­
+	// ì´ë¯¸ì§€ ì´ˆê¸°í™”
 	for (i = 0; i < histoSize.height; i++)
 	{
 		for (j = 0; j < histoSize.width; j++)
@@ -130,13 +130,13 @@ void get_hist(uchar** img, int X_Size, int Y_Size)
 
 	tp = X_Size * Y_Size;
 
-	// È÷½ºÅä±×·¥ ¹è¿­ ÃÊ±âÈ­
+	// íˆìŠ¤í† ê·¸ë¨ ë°°ì—´ ì´ˆê¸°í™”
 	for (i = 0; i < 256; i++)
 	{
 		histogram[i] = 0;
 	}
 
-	// img[i][j]°¡ °®°í ÀÖ´Â ±×·¹ÀÌ ·¹º§¿¡ ÇØ´çÇÏ´Â È÷½ºÅä±×·¥ °ªÀ» ++ÇÔ
+	// img[i][j]ê°€ ê°–ê³  ìˆëŠ” ê·¸ë ˆì´ ë ˆë²¨ì— í•´ë‹¹í•˜ëŠ” íˆìŠ¤í† ê·¸ë¨ ê°’ì„ ++í•¨
 	for (i = 0; i < Y_Size; i++)
 	{
 		for (j = 0; j < X_Size; j++)
@@ -145,7 +145,7 @@ void get_hist(uchar** img, int X_Size, int Y_Size)
 		}
 	}
 
-	// Find the maximum histogram value È÷½ºÅä±×·¥ ÃÖ´ñ°ª Ã£±â(Á¤±ÔÈ­¸¦ À§ÇØ)
+	// Find the maximum histogram value íˆìŠ¤í† ê·¸ë¨ ìµœëŒ“ê°’ ì°¾ê¸°(ì •ê·œí™”ë¥¼ ìœ„í•´)
 	tmp1 = 0;
 
 	for (i = 0; i < 256; ++i)
@@ -159,7 +159,7 @@ void get_hist(uchar** img, int X_Size, int Y_Size)
 		cvLine(imgHisto, cvPoint(i, 255), cvPoint(i, 255 - tmp), CV_RGB(255, 255, 255), 1, 8, 0);
 	}
 
-	// ¸ğµç È÷½ºÅä±×·¥À» ´õÇÏ¿© CDF ¸¸µé±â
+	// ëª¨ë“  íˆìŠ¤í† ê·¸ë¨ì„ ë”í•˜ì—¬ CDF ë§Œë“¤ê¸°
 	cvShowImage("Histo Line ", imgHisto);
 	cdfOfHisto[0] = histogram[0];
 
@@ -169,7 +169,7 @@ void get_hist(uchar** img, int X_Size, int Y_Size)
 	}
 
 	// Draw the CDF of Histogram
-	// ÃÖ´ë È÷½ºÅä±×·¥ °ªÀ»(ÁßÃ¸µÈ ¸¶Áö¸· °ª) tmp·Î ÁöÁ¤
+	// ìµœëŒ€ íˆìŠ¤í† ê·¸ë¨ ê°’ì„(ì¤‘ì²©ëœ ë§ˆì§€ë§‰ ê°’) tmpë¡œ ì§€ì •
 	tmp1 = (double)cdfOfHisto[255];
 
 	for (i = 0; i < 256; ++i)
@@ -182,14 +182,14 @@ void get_hist(uchar** img, int X_Size, int Y_Size)
 	range = cdfOfHisto[255] - cdfOfHisto[0];
 	histogramEqual[0] = 0;
 
-	// Á¤±ÔÈ­
+	// ì •ê·œí™”
 	for (i = 0; i < 256; ++i)
 	{
 		t = (int)ceil(((cdfOfHisto[i] - cdfOfHisto[0]) * 255.0) / range);
 		histogramEqual[i] = (t < 0) ? 0 : (t > 255) ? 255 : t;
 	}
 
-	cvReleaseImage(&imgHisto); // ¸Ş¸ğ¸® ÇØÁ¦
+	cvReleaseImage(&imgHisto); // ë©”ëª¨ë¦¬ í•´ì œ
 
 	for (i = 0; i < Y_Size; ++i)
 	{
@@ -200,7 +200,7 @@ void get_hist(uchar** img, int X_Size, int Y_Size)
 	}
 }
 
-// È÷½ºÅä±×·¥ ÀÌÄ÷¶óÀÌÁ¦ÀÌ¼Ç ÇÔ¼ö , ÀÌ¹ÌÁö opencv·Î Ãâ·Â
+// íˆìŠ¤í† ê·¸ë¨ ì´í€„ë¼ì´ì œì´ì…˜ í•¨ìˆ˜ , ì´ë¯¸ì§€ opencvë¡œ ì¶œë ¥
 void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 {
 	int i, j, tmp;
@@ -209,7 +209,7 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 	CvSize histoSize, cdfSize;
 	IplImage* imgHisto, * cdfImgHisto;
 
-	// »ı¼ºÇÒ ÀÌ¹ÌÁö »çÀÌÁî(¿øº» ÀÌ¹ÌÁö, ´©ÀûºĞÆ÷ ÈÄÀÇ ÀÌ¹ÌÁö)
+	// ìƒì„±í•  ì´ë¯¸ì§€ ì‚¬ì´ì¦ˆ(ì›ë³¸ ì´ë¯¸ì§€, ëˆ„ì ë¶„í¬ í›„ì˜ ì´ë¯¸ì§€)
 	histoSize.width = 256;
 	histoSize.height = 256;
 
@@ -219,7 +219,7 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 	imgHisto = cvCreateImage(histoSize, 8, 1);
 	cdfImgHisto = cvCreateImage(cdfSize, 8, 1);
 
-	// ÀÌ¹ÌÁö ÃÊ±âÈ­
+	// ì´ë¯¸ì§€ ì´ˆê¸°í™”
 	for (i = 0; i < histoSize.height; i++)
 	{
 		for (j = 0; j < histoSize.width; j++)
@@ -238,13 +238,13 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 
 	tp = X_Size * Y_Size;
 
-	// È÷½ºÅä±×·¥ ¹è¿­ ÃÊ±âÈ­
+	// íˆìŠ¤í† ê·¸ë¨ ë°°ì—´ ì´ˆê¸°í™”
 	for (i = 0; i < 256; i++)
 	{
 		histogram[i] = 0;
 	}
 
-	// img[i][j]°¡ °®°í ÀÖ´Â ±×·¹ÀÌ ·¹º§¿¡ ÇØ´çÇÏ´Â È÷½ºÅä±×·¥ °ªÀ» ++ÇÔ
+	// img[i][j]ê°€ ê°–ê³  ìˆëŠ” ê·¸ë ˆì´ ë ˆë²¨ì— í•´ë‹¹í•˜ëŠ” íˆìŠ¤í† ê·¸ë¨ ê°’ì„ ++í•¨
 	for (i = 0; i < Y_Size; i++)
 	{
 		for (j = 0; j < X_Size; j++)
@@ -253,7 +253,7 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 		}
 	}
 
-	// Find the maximum histogram value È÷½ºÅä±×·¥ ÃÖ´ñ°ª Ã£±â(Á¤±ÔÈ­¸¦ À§ÇØ)
+	// Find the maximum histogram value íˆìŠ¤í† ê·¸ë¨ ìµœëŒ“ê°’ ì°¾ê¸°(ì •ê·œí™”ë¥¼ ìœ„í•´)
 	tmp1 = 0;
 
 	for (i = 0; i < 256; ++i)
@@ -261,7 +261,7 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 		tmp1 = tmp1 > histogram[i] ? tmp1 : histogram[i];
 	}
 
-	// ÃÖ´ë °ª¿¡ ºñ·ÊÇØ¼­ Á¤±ÔÈ­ (0~255)
+	// ìµœëŒ€ ê°’ì— ë¹„ë¡€í•´ì„œ ì •ê·œí™” (0~255)
 	printf("\n\nHisto %d \n\n\n", mod);
 
 	for (i = 0; i < 256; ++i)
@@ -283,7 +283,7 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 			break;
 	}
 
-	// ¸ğµç È÷½ºÅä±×·¥À» ´õÇÏ¿© CDF ¸¸µé±â
+	// ëª¨ë“  íˆìŠ¤í† ê·¸ë¨ì„ ë”í•˜ì—¬ CDF ë§Œë“¤ê¸°
 	cdfOfHisto[0] = histogram[0];
 	printf("\n\ncdfHisto %d \n\n\n", mod);
 
@@ -294,10 +294,10 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 	}
 
 	// Draw the CDF of Histogram
-	// ÃÖ´ë È÷½ºÅä±×·¥ °ªÀ»(ÁßÃ¸µÈ ¸¶Áö¸· °ª) tmp·Î ÁöÁ¤
+	// ìµœëŒ€ íˆìŠ¤í† ê·¸ë¨ ê°’ì„(ì¤‘ì²©ëœ ë§ˆì§€ë§‰ ê°’) tmpë¡œ ì§€ì •
 	tmp1 = (double)cdfOfHisto[255];
 
-	// È÷½ºÅä±×·¥ Á¤±ÔÈ­(0~255) ¹× Ãâ·Â
+	// íˆìŠ¤í† ê·¸ë¨ ì •ê·œí™”(0~255) ë° ì¶œë ¥
 	printf("\n\ncdfHisto Temp%d \n\n\n", mod);
 
 	for (i = 0; i < 256; ++i)
@@ -323,12 +323,12 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 
 	range = cdfOfHisto[255] - cdfOfHisto[0];
 	// printf("%d" %d \n", tp, range);
-	// range == È÷½ºÅä±×·¥ÀÇ ¹üÀ§ 
+	// range == íˆìŠ¤í† ê·¸ë¨ì˜ ë²”ìœ„ 
 
 	printf("\n\nHistoEqual %d \n\n\n", mod);
 	histogramEqual[0] = 0;
 
-	// Á¤±ÔÈ­
+	// ì •ê·œí™”
 	for (i = 0; i < 256; ++i)
 	{
 		t = (int)ceil(((cdfOfHisto[i] - cdfOfHisto[0]) * 255.0) / range);
@@ -336,7 +336,7 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 		printf("%d, ", histogramEqual[i]);
 	}
 
-	// È÷½ºÅä±×·¥ÀÇ ÆòÈ°È­ ÀÛ¾÷
+	// íˆìŠ¤í† ê·¸ë¨ì˜ í‰í™œí™” ì‘ì—…
 	for (i = 0; i < 256; i++)
 	{
 		if (histogramEqual[i] > 127)
@@ -346,13 +346,13 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 		}
 	}
 
-	//if(mod==0) cvShowImage("¿ªº¯È¯", rvsHisto);
+	//if(mod==0) cvShowImage("ì—­ë³€í™˜", rvsHisto);
 
-	cvReleaseImage(&imgHisto);	  // ¸Ş¸ğ¸® ÇØÁ¦
-	cvReleaseImage(&cdfImgHisto); // ¸Ş¸ğ¸® ÇØÁ¦
+	cvReleaseImage(&imgHisto);	  // ë©”ëª¨ë¦¬ í•´ì œ
+	cvReleaseImage(&cdfImgHisto); // ë©”ëª¨ë¦¬ í•´ì œ
 
-	//mod 0ÀÏ ¶§ cdf¸¦ ¿ªº¯È¯ÇÏ¿© ´ëÀÔ ÆòÈ°È­ ¼öÇà(¿À¸®Áö³¯ ÀÌ¹ÌÁö)
-	//´ëÀÔÇÏ´Â °Í ÀÚÃ¼°¡ ¿ªº¯È¯ ÇÏ´Â µ¿ÀÛÀ» ¼öÇàÇÔ
+	//mod 0ì¼ ë•Œ cdfë¥¼ ì—­ë³€í™˜í•˜ì—¬ ëŒ€ì… í‰í™œí™” ìˆ˜í–‰(ì˜¤ë¦¬ì§€ë‚  ì´ë¯¸ì§€)
+	//ëŒ€ì…í•˜ëŠ” ê²ƒ ìì²´ê°€ ì—­ë³€í™˜ í•˜ëŠ” ë™ì‘ì„ ìˆ˜í–‰í•¨
 	if (mod == 0)
 	{
 		for (i = 0; i < Y_Size; ++i)
@@ -365,7 +365,7 @@ void get_hist1(uchar** img, int X_Size, int Y_Size, int mod)
 	}
 }
 
-// È÷½ºÅä±×·¥ ½ºÆä½ÃÇÇÄÉÀÌ¼Ç ÇÔ¼ö , ÀÌ¹ÌÁö opencv·Î Ãâ·Â
+// íˆìŠ¤í† ê·¸ë¨ ìŠ¤í˜ì‹œí”¼ì¼€ì´ì…˜ í•¨ìˆ˜ , ì´ë¯¸ì§€ opencvë¡œ ì¶œë ¥
 void get_Match(uchar** img, int X_Size, int Y_Size, int histogramSpec[256])
 {
 	int i, j, tmp, matchz = 0;
@@ -375,13 +375,13 @@ void get_Match(uchar** img, int X_Size, int Y_Size, int histogramSpec[256])
 	CvSize matchSize;
 	IplImage* matchImg;
 
-	// »ı¼ºÇÒ ÀÌ¹ÌÁö »çÀÌÁî(¸ÅÄª ÈÄÀÇ ÀÌ¹ÌÁö)
+	// ìƒì„±í•  ì´ë¯¸ì§€ ì‚¬ì´ì¦ˆ(ë§¤ì¹­ í›„ì˜ ì´ë¯¸ì§€)
 	matchSize.width = 256;
 	matchSize.height = 256;
 	
 	matchImg = cvCreateImage(matchSize, 8, 1);
 
-	// ÀÌ¹ÌÁö ÃÊ±âÈ­
+	// ì´ë¯¸ì§€ ì´ˆê¸°í™”
 	for (i = 0; i < matchSize.height; i++)
 	{
 		for (j = 0; j < matchSize.width; j++)
@@ -392,7 +392,7 @@ void get_Match(uchar** img, int X_Size, int Y_Size, int histogramSpec[256])
 
 	printf("Start HistoGram Specification \n");
 
-	// ÁöÁ¤¿µ»óÀÇ CDF¸¦ ´Ù½Ã ¿ªº¯È¯ÇÏ´Â °úÁ¤
+	// ì§€ì •ì˜ìƒì˜ CDFë¥¼ ë‹¤ì‹œ ì—­ë³€í™˜í•˜ëŠ” ê³¼ì •
 	for (i = 0; i < 256; i++)
 	{
 		histogramMatch[i] = 0;
@@ -411,9 +411,9 @@ void get_Match(uchar** img, int X_Size, int Y_Size, int histogramSpec[256])
 		cvLine(matchImg, cvPoint(i, 255), cvPoint(i, 255 - histogramMatch[i]), CV_RGB(255, 255, 255), 1, 8, 0);
 	}
 
-	cvShowImage("¿ªº¯È¯µÈ È÷½ºÅä±×·¥", matchImg);
+	cvShowImage("ì—­ë³€í™˜ëœ íˆìŠ¤í† ê·¸ë¨", matchImg);
 
-	//¿ªº¯È¯ÇÏ¸ç ÀÌ¹ÌÁö ´ëÀÀ
+	//ì—­ë³€í™˜í•˜ë©° ì´ë¯¸ì§€ ëŒ€ì‘
 	for (i = 0; i < Y_Size; ++i)
 	{
 		for (j = 0; j < X_Size; ++j)
@@ -423,7 +423,7 @@ void get_Match(uchar** img, int X_Size, int Y_Size, int histogramSpec[256])
 	}
 }
 
-// ¸ŞÀÎ ÇÔ¼ö
+// ë©”ì¸ í•¨ìˆ˜
 int main(int argc, char* argv[])
 {
 	int i, j;
@@ -442,7 +442,7 @@ int main(int argc, char* argv[])
 	img = uc_alloc(imgSize.width, imgSize.height);
 	read_ucmatrix(imgSize.width, imgSize.height, img, argv[1]);
 
-	// È÷½ºÅä±×·¥
+	// íˆìŠ¤í† ê·¸ë¨
 	if (atoi(argv[4]) == -2)
 	{
 		cvImg = cvCreateImage(imgSize, 8, 1);	
@@ -455,13 +455,13 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		cvNamedWindow(argv[1], 1);	 // À©µµ¿ì ¿­±â	
-		cvShowImage(argv[1], cvImg); // ÀÌ¹ÌÁö ¿­±â
+		cvNamedWindow(argv[1], 1);	 // ìœˆë„ìš° ì—´ê¸°	
+		cvShowImage(argv[1], cvImg); // ì´ë¯¸ì§€ ì—´ê¸°
 
 		get_hist(img, imgSize.width, imgSize.height);
 	}
 
-	// È÷½ºÅä±×·¥ ÆòÈ°È­
+	// íˆìŠ¤í† ê·¸ë¨ í‰í™œí™”
 	else if (atoi(argv[4]) == -1)
 	{
 		printf("equal\n		");
@@ -475,11 +475,11 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		// ¿øº» È÷½ºÅä±×·¥ Ãâ·Â ¹× ÆòÈ°È­
+		// ì›ë³¸ íˆìŠ¤í† ê·¸ë¨ ì¶œë ¥ ë° í‰í™œí™”
 		get_hist1(img, imgSize.width, imgSize.height, 0);
 
-		cvNamedWindow(argv[1], 1);	 // À©µµ¿ì ¿­±â
-		cvShowImage(argv[1], cvImg); // ÀÌ¹ÌÁö ¿­±â
+		cvNamedWindow(argv[1], 1);	 // ìœˆë„ìš° ì—´ê¸°
+		cvShowImage(argv[1], cvImg); // ì´ë¯¸ì§€ ì—´ê¸°
 
 		for (i = 0; i < imgSize.height; i++)
 		{
@@ -489,12 +489,12 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		cvShowImage("histoequals...", cvImg); // ÀÌ¹ÌÁö ¿­±â
+		cvShowImage("histoequals...", cvImg); // ì´ë¯¸ì§€ ì—´ê¸°
 
 		get_hist1(img, imgSize.width, imgSize.height, 2);
 	}
 
-	// È÷½ºÅä±×·¥ ¸ÅÄª
+	// íˆìŠ¤í† ê·¸ë¨ ë§¤ì¹­
 	else if (atoi(argv[4]) == 0)
 	{
 		printf("else...\n");
@@ -508,7 +508,7 @@ int main(int argc, char* argv[])
 
 		cvImg = cvCreateImage(imgSize, 8, 1);
 
-		// constrastStreching(img, outimg, imgSize.width, imgSize.height); // ÀÌ·± ½ÄÀ¸·Î..
+		// constrastStreching(img, outimg, imgSize.width, imgSize.height); // ì´ëŸ° ì‹ìœ¼ë¡œ..
 
 		for (i = 0; i < imgSize.height; i++)
 		{
@@ -518,15 +518,15 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		// ¿øº» È÷½ºÅä±×·¥ Ãâ·Â ¹× ÆòÈ°È­
+		// ì›ë³¸ íˆìŠ¤í† ê·¸ë¨ ì¶œë ¥ ë° í‰í™œí™”
 		get_hist1(img, imgSize.width, imgSize.height, 0);
 
-		cvNamedWindow(argv[1], 1);	 //À©µµ¿ì ¿­±â
-		cvShowImage(argv[1], cvImg); //ÀÌ¹ÌÁö ¿­±â
+		cvNamedWindow(argv[1], 1);	 //ìœˆë„ìš° ì—´ê¸°
+		cvShowImage(argv[1], cvImg); //ì´ë¯¸ì§€ ì—´ê¸°
 
-		cvImg2 = cvCreateImage(imgSize2, 8, 1);	// ÀÌ¹ÌÁö »ı¼º2
+		cvImg2 = cvCreateImage(imgSize2, 8, 1);	// ì´ë¯¸ì§€ ìƒì„±2
 
-		// Å¸°Ù ÀÌ¹ÌÁö ÀÔ·Â
+		// íƒ€ê²Ÿ ì´ë¯¸ì§€ ì…ë ¥
 		for (i = 0; i < imgSize2.height; i++)
 		{
 			for (j = 0; j < imgSize2.width; j++)
@@ -535,13 +535,13 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		// Å¸°Ù ÀÌ¹ÌÁö Ãâ·Â
+		// íƒ€ê²Ÿ ì´ë¯¸ì§€ ì¶œë ¥
 		cvShowImage(argv[5], cvImg2);
 
-		// Å¸°Ù È÷½ºÅä±×·¥ Ãâ·Â
+		// íƒ€ê²Ÿ íˆìŠ¤í† ê·¸ë¨ ì¶œë ¥
 		get_hist1(img2, imgSize2.width, imgSize2.height, 1);
 
-		// ¿ªº¯È¯µÈ Å¸°Ù È÷½ºÅä±×·¥ cdf¸¦ ÆòÈ°È­µÈ ¿øº» ÀÌ¹ÌÁö¿¡ ´ëÀÔ
+		// ì—­ë³€í™˜ëœ íƒ€ê²Ÿ íˆìŠ¤í† ê·¸ë¨ cdfë¥¼ í‰í™œí™”ëœ ì›ë³¸ ì´ë¯¸ì§€ì— ëŒ€ì…
 		// get_Match(img, imgSize.width, imgSize.height, histogramEqual);
 		get_Match(img, imgSize.width, imgSize.height, tmpCDF);
 
@@ -553,7 +553,7 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		cvShowImage("Histogram match...", cvImg); // ÀÌ¹ÌÁö ¿­±â
+		cvShowImage("Histogram match...", cvImg); // ì´ë¯¸ì§€ ì—´ê¸°
 
 		get_hist1(img, imgSize.width, imgSize.height, 2);
 	}
